@@ -15,7 +15,7 @@ jobs:
     ##Git checkout
       - uses: actions/checkout@v4
         with:
-          repository: 'trumio/trumio_meeting_analysis'
+          repository: 'kalyandevops6303/python-function'
 
       - name: Function-name
         run: |
