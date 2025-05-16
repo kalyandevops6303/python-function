@@ -19,7 +19,7 @@ jobs:
 
       - name: Function-name
         run: |
-          echo "functionapp=tr-meeting-analysis-fn" >> $GITHUB_ENV
+          echo "tr-fn-fnapp" >> $GITHUB_ENV
  
       # - name: Install Azure cli
       #   run: |
