@@ -57,7 +57,7 @@ jobs:
       
     - name: creating db user
       run: |
-        atlas dbusers create --username ${{ github.event.inputs.client_name }}user --password $PASSWORD --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }} --scope Tr-mongo-cluster
+        atlas dbusers create --username ${{ github.event.inputs.client_name }}user --password ${{ steps.genpass.outputs.password }} --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }} --scope Tr-mongo-cluster
 
     - name: Upload password.txt as artifact
       uses: actions/upload-artifact@v4
