@@ -6,10 +6,10 @@ on:
       client_name:
         description: 'Client name (e.g., wipro)'
         required: true
-        type: choice
-        options:
-          - wipro
-          - lti
+        # type: choice
+        # options:
+        #   - wipro
+        #   - lti
       Role_name:
         description: 'Role name (e.g., read)'
         required: true
