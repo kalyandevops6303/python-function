@@ -40,6 +40,6 @@ jobs:
         atlas config set project_id ${{ secrets.ATLAS_PROJECT_ID }}
 
         #atlas dbusers create --username ${{ github.event.inputs.client_name }} --password $password --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }} --scope Tr-mongo-cluster
-        atlas dbusers create --username ${{ github.event.inputs.client_name }} --password $password --role read@movies --scope Tr-mongo-cluster
+        atlas dbusers create --username ${{ github.event.inputs.client_name }} --password StrongP@ss123 --role read@movies --scope Tr-mongo-cluster
 
         rm -rf ~/.config/atlascli/config.toml
