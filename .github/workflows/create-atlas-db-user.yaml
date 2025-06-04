@@ -45,7 +45,7 @@ jobs:
     - name: Generate 8-character password and create db user
       run: |
         # Generate 8-character password
-        PASSWORD=$(tr -dc 'A-Za-z0-9!@#$%&*_' </dev/urandom | head -c 8)
+        PASSWORD=$(tr -dc 'A-Za-z0-9!@#$%&*_' </dev/urandom | head -c 16)
 
         # Mask the password in GitHub logs
         echo "::add-mask::$PASSWORD"
