@@ -47,13 +47,13 @@ jobs:
       uses: Ba4bes/Password-Generator@v0.1
     - name: generating random password
       run: |
-        echo "${{ steps.generatedpassword.outputs.password }}" >> ${{ github.event.inputs.client_name }}user-password.txt
+        #echo "${{ steps.generatedpassword.outputs.password }}" >> ${{ github.event.inputs.client_name }}user-password.txt
         echo $password="${{ steps.generatedpassword.outputs.password }}"
       shell: bash
       
     - name: creating db user
       run: |
-        atlas dbusers create --username ${{ github.event.inputs.client_name }}user --password StrongP@ss123 --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }} --scope Tr-mongo-cluster
+        atlas dbusers create --username ${{ github.event.inputs.client_name }}user --password $password --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }} --scope Tr-mongo-cluster
     
     - name: removing configuration details
       run: |
