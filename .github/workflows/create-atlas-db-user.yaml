@@ -51,17 +51,17 @@ jobs:
         echo "::add-mask::$PASSWORD"
 
         # Save password to file
-        echo "$PASSWORD" > password.txt
+        echo "$PASSWORD" > ${{ github.event.inputs.client_name }}-password.txt
 
-        echo "Password saved to password.txt"
+        echo "Password saved to ${{ github.event.inputs.client_name }}-password.txt"
       
         atlas dbusers create --username ${{ github.event.inputs.client_name }}user --password "$PASSWORD" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }} --scope Tr-mongo-cluster
 
-    - name: Upload password.txt as artifact
+    - name: Upload ${{ github.event.inputs.client_name }}-password.txt as artifact
       uses: actions/upload-artifact@v4
       with:
         name: generated-password
-        path: password.txt
+        path: ${{ github.event.inputs.client_name }}-password.txt
     
     - name: removing configuration details
       run: |
