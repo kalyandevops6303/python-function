@@ -1,0 +1,34 @@
+name: UAT Tag Dispatch & Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      client_name:
+        description: 'Client name (e.g., wipro)'
+        required: true
+        type: choice
+        options:
+          - wipro
+          - lti
+      Role_name:
+        description: 'Role name (e.g., read)'
+        required: true
+        type: choice
+        options:
+          - read
+          - readWrite
+jobs:
+  create-atlas-db-user:
+    runs-on: ubuntu-latest          
+
+    steps:
+    - name: setting up config detsils
+      run: |
+        # Set Atlas CLI configuration
+        atlas config set public_api_key ${{ secrets.ATLAS_PUBLIC_KEY }}
+        atlas config set private_api_key ${{ secrets.ATLAS_PRIVATE_KEY }}
+        atlas config set project_id ${{ secrets.PROJECT_ID }}
+
+        atlas dbusers create --username ${{ github.event.inputs.client_name }} --password $password --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }} --scope Tr-mongo-cluster
+
+        rm -rf ~/.config/atlascli/config.toml
