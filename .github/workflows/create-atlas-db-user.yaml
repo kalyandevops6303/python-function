@@ -1,4 +1,4 @@
-name: UAT Tag Dispatch & Release
+name: create mongo db user with specific permission
 
 on:
   workflow_dispatch:
