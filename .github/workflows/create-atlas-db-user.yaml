@@ -48,7 +48,7 @@ jobs:
     - name: generating random password
       run: |
         #echo "${{ steps.generatedpassword.outputs.password }}" >> ${{ github.event.inputs.client_name }}user-password.txt
-        echo $password="${{ steps.generatedpassword.outputs.password }}"
+        echo "${{ steps.generatedpassword.outputs.password }}" >>$password
       shell: bash
       
     - name: creating db user
