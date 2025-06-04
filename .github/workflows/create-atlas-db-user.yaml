@@ -47,8 +47,7 @@ jobs:
       uses: Ba4bes/Password-Generator@v0.1
     - name: generating random password
       run: |
-        #echo "${{ steps.generatedpassword.outputs.password }}" >> ${{ github.event.inputs.client_name }}user-password.txt
-        echo "${{ steps.generatedpassword.outputs.password }}" >>$password
+        echo "${{ steps.generatedpassword.outputs.password }}" >> $password
       shell: bash
       
     - name: creating db user
