@@ -54,10 +54,8 @@ jobs:
         atlas dbusers create --username ${{ github.event.inputs.client_name }}user --password "$PASSWORD" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }} --scope Tr-mongo-cluster
     
     
-    - name: Save username and password to file
-      run: |
         FILE_NAME="${{ github.event.inputs.client_name }}user-password.txt"
-        echo "username=${{ github.event.inputs.client_name }}" > "$FILE_NAME"
+        echo "username=${{ github.event.inputs.client_name }}user" > "$FILE_NAME"
         echo "password=${{ steps.genpass.outputs.password }}" >> "$FILE_NAME"
       
     - name: Upload ${{ github.event.inputs.client_name }}user-password.txt as artifact
