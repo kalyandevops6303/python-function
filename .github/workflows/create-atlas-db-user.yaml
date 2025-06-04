@@ -55,8 +55,6 @@ jobs:
 
         echo "Password saved to password.txt"
       
-    - name: creating db user
-      run: |
         atlas dbusers create --username ${{ github.event.inputs.client_name }}user --password "$PASSWORD" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }} --scope Tr-mongo-cluster
 
     - name: Upload password.txt as artifact
