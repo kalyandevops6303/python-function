@@ -10,6 +10,13 @@ on:
         options:
           - wipro
           - lti
+      collection_name:
+        description: 'Collection name (e.g., movies)'
+        required: true
+        type: choice
+        options:
+          - movies
+          - comments       
       Role_name:
         description: 'Role name (e.g., read)'
         required: true
@@ -51,8 +58,7 @@ jobs:
         echo "::add-mask::$PASSWORD"
 
       
-        atlas dbusers create --username ${{ github.event.inputs.client_name }}user --password "$PASSWORD" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }} --scope Tr-mongo-cluster
-    
+        atlas dbusers create --username ${{ github.event.inputs.client_name }}user --password "$PASSWORD" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.${{ github.event.inputs.collection_name }} --scope Tr-mongo-cluster
     
         FILE_NAME="${{ github.event.inputs.client_name }}user-password.txt"
         echo "username=${{ github.event.inputs.client_name }}user" > "$FILE_NAME"
