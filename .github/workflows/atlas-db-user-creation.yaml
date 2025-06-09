@@ -52,7 +52,7 @@ jobs:
     - name: Generate 16-character password and create db user
       run: |
         # Generate 16-character password
-        PASSWORD=$(tr -dc 'A-Za-z0-9!@#$%&*_' </dev/urandom | head -c 16)
+        PASSWORD=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 16)
 
         # Mask the password in GitHub logs
         echo "::add-mask::$PASSWORD"
