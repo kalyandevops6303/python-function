@@ -15,8 +15,8 @@ on:
         required: true
         type: choice
         options:
-          - movies
-          - comments       
+          - movies #wipro
+          - comments #lti  
       Role_name:
         description: 'Role name (e.g., read)'
         required: true
