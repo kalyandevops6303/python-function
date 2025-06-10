@@ -11,7 +11,7 @@ on:
           - wipro
       collection_name:
         description: 'collection name (e.g., features_md)'
-        required: true
+        required: false
         type: choice
         options:
           - additional_info
@@ -151,7 +151,13 @@ on:
           - user_document_signatures
           - user_tokens
           - users
-
+      multiple_collection_names:
+        description: 'collection names (e.g., features_md, movies)'
+        required: true
+        type: choice
+        options:
+          - additional_info
+          - admins
 
       Role_name:
         description: 'Role name (e.g., read)'
@@ -163,6 +169,8 @@ on:
 jobs:
   create-atlas-db-user:
     runs-on: ubuntu-latest          
+    env:
+     ROLES: ${{ github.event.inputs.multiple_collection_names }}
 
     steps:
     - name: Installing atlas mongodb and setting up monogo cli
@@ -193,10 +201,13 @@ jobs:
         # Mask the password in GitHub logs
         echo "::add-mask::$PASSWORD"
 
+        IFS=',' read -ra ROLE <<< "$ROLES"
+        for item in "${ROLE[@]}"; do
       
-        atlas dbusers create --username ${{ github.event.inputs.client_name }}user --password "$PASSWORD" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.${{ github.event.inputs.collection_name }} --scope TrumioCluster0
-    
-    
+        atlas dbusers create --username ${{ github.event.inputs.client_name }}user --password "$PASSWORD" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}."$item" --scope TrumioCluster0
+        
+        done
+        
         FILE_NAME="${{ github.event.inputs.client_name }}user-password.txt"
         echo "username=${{ github.event.inputs.client_name }}user" > "$FILE_NAME"
         echo "password=$PASSWORD" >> "$FILE_NAME"
