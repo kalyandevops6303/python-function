@@ -10,7 +10,7 @@ on:
         options:
           - wipro
       collection_name:
-        description: 'collection name (e.g., features_md)'
+        description: 'Refer these collection names bellow field (e.g., features_md)'
         required: false
         type: choice
         options:
@@ -152,7 +152,7 @@ on:
           - user_tokens
           - users
       multiple_collection_names:
-        description: 'collection names (e.g., features_md, movies)'
+        description: 'Enter , seperated collection names (e.g., features_md, movies)'
         required: true
 
       Role_name:
@@ -198,11 +198,22 @@ jobs:
         echo "::add-mask::$PASSWORD"
 
         IFS=',' read -ra ROLE <<< "$ROLES"
-        for item in "${ROLE[@]}"; do
-      
-        atlas dbusers create --username ${{ github.event.inputs.client_name }}user --password "$PASSWORD" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}."$item" --scope TrumioCluster0
+
+        echo "$ROLES"
         
+        # Start the base command
+        CMD="atlas dbusers create --username ${{ github.event.inputs.client_name }}user --password "$PASSWORD" --scope Tr-mongo-cluster"
+        
+        # Append --role read@dbname for each db
+        for item in "${ROLE[@]}"; do
+        CMD+="--role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item"
         done
+        
+        # Show the final command (for logging)
+        echo "Final command: $CMD"
+
+        # Execute the command
+        eval "$CMD"
         
         FILE_NAME="${{ github.event.inputs.client_name }}user-password.txt"
         echo "username=${{ github.event.inputs.client_name }}user" > "$FILE_NAME"
