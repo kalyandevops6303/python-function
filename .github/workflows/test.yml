@@ -210,7 +210,7 @@ jobs:
           CMD="atlas dbusers update $USERNAME --scope Tr-mongo-cluster"
         else
           echo "$USERNAME does not exist. Creating new user."
-          CMD="atlas dbusers create --username $USERNAME --password \"$PASSWORD\" --scope Tr-mongo-cluster"
+          CMD="atlas dbusers create --username $USERNAME --password $PASSWORD --scope Tr-mongo-cluster"
         fi
     
         # Append roles
