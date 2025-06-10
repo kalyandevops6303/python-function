@@ -152,7 +152,7 @@ on:
           - user_tokens
           - users
       multiple_collection_names:
-        description: 'Enter , seperated collection names (e.g., features_md, movies)'
+        description: 'Enter , seperated collection names (e.g., features_md,movies)'
         required: true
 
       Role_name:
@@ -206,7 +206,7 @@ jobs:
         
         # Append --role read@dbname for each db
         for item in "${ROLE[@]}"; do
-        CMD+="--role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item"
+        CMD+=" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item"
         done
         
         # Show the final command (for logging)
