@@ -189,35 +189,70 @@ jobs:
         atlas config set private_api_key ${{ secrets.ATLAS_PRIVATE_KEY }}
         atlas config set project_id ${{ secrets.ATLAS_PROJECT_ID }}
         
-    - name: Generate 16-character password and create db user
+    - name: Validating weather user existing or not and creating user if not #Generate 16-character password and create db user
       run: |
-        # Generate 16-character password
-        PASSWORD=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 16)
-
-        # Mask the password in GitHub logs
-        echo "::add-mask::$PASSWORD"
-
-        IFS=',' read -ra ROLE <<< "$ROLES"
-
-        echo "$ROLES"
+        atlas dbusers list >> userlist.txt
         
-        # Start the base command
-        CMD="atlas dbusers create --username ${{ github.event.inputs.client_name }}user --password "$PASSWORD" --scope Tr-mongo-cluster"
+        if grep -q "${{ github.event.inputs.client_name }}user" userlist.txt; then
+          echo "User exists, updating permission"
+          IFS=',' read -ra ROLE <<< "$ROLES"
+  
+          echo "$ROLES"
+          
+          # Start the base command
+          CMD="atlas dbusers update ${{ github.event.inputs.client_name }}user --scope Tr-mongo-cluster"
+          
+          # Append --role read@dbname for each db
+          for item in "${ROLE[@]}"; do
+          CMD+=" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item"
+          done
+          
+          # Show the final command (for logging)
+          echo "Final command: $CMD"
+  
+          # Execute the command
+          eval "$CMD"
+          # displaying user role updated message
+          echo "${{ github.event.inputs.client_name }}user role has been updated successfully"
+          
+        else
+          echo "User not found, creating the ${{ github.event.inputs.client_name }}user"
         
-        # Append --role read@dbname for each db
-        for item in "${ROLE[@]}"; do
-        CMD+=" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item"
-        done
-        
-        # Show the final command (for logging)
-        echo "Final command: $CMD"
-
-        # Execute the command
-        eval "$CMD"
-        
-        FILE_NAME="${{ github.event.inputs.client_name }}user-password.txt"
-        echo "username=${{ github.event.inputs.client_name }}user" > "$FILE_NAME"
-        echo "password=$PASSWORD" >> "$FILE_NAME"
+          # Generate 16-character password
+          PASSWORD=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 16)
+  
+          # Mask the password in GitHub logs
+          echo "::add-mask::$PASSWORD"
+  
+          IFS=',' read -ra ROLE <<< "$ROLES"
+  
+          echo "$ROLES"
+          
+          # Start the base command
+          CMD="atlas dbusers create --username ${{ github.event.inputs.client_name }}user --password "$PASSWORD" --scope Tr-mongo-cluster"
+          
+          # Append --role read@dbname for each db
+          for item in "${ROLE[@]}"; do
+          CMD+=" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item"
+          done
+          
+          # Show the final command (for logging)
+          echo "Final command: $CMD"
+  
+          # Execute the command
+          eval "$CMD"
+          # displaying user creation message
+          echo "${{ github.event.inputs.client_name }}user has been created successfully"
+  
+          # Execute the command
+          eval "$CMD"
+          # displaying user creation message
+          echo "${{ github.event.inputs.client_name }}user has been created successfully"
+          
+          FILE_NAME="${{ github.event.inputs.client_name }}user-password.txt"
+          echo "username=${{ github.event.inputs.client_name }}user" > "$FILE_NAME"
+          echo "password=$PASSWORD" >> "$FILE_NAME"
+        fi
       
     - name: Upload ${{ github.event.inputs.client_name }}user-password.txt as artifact
       uses: actions/upload-artifact@v4
