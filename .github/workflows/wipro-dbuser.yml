@@ -197,6 +197,7 @@ jobs:
           echo "User exists, updating ROLE"
 
           IFS=',' read -ra ROLE <<< "$ROLES"
+          echo "ROLES=$ROLES"
   
           echo "$ROLES"
           
