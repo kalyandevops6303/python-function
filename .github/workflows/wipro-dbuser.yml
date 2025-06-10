@@ -263,3 +263,4 @@ jobs:
     - name: Removing configuration details
       run: |
         rm -rf ~/.config/atlascli/config.toml
+      continue-on-error: true
