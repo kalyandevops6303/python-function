@@ -194,10 +194,9 @@ jobs:
         atlas dbusers list >> userlist.txt
         
         if grep -q "${{ github.event.inputs.client_name }}user" userlist.txt; then
-          echo "User exists, updating permission"
-          echo ${{ github.event.inputs.multiple_collection_names }} >> $GITHUB_OUTPUT
-          IFS=',' read -ra ROLE <<< $GITHUB_OUTPUT 
-          #"$ROLES"
+          echo "User exists, updating ROLE"
+
+          IFS=',' read -ra ROLE <<< "$ROLES"
   
           echo "$ROLES"
           
