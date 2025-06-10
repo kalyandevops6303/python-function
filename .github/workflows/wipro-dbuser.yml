@@ -154,10 +154,6 @@ on:
       multiple_collection_names:
         description: 'collection names (e.g., features_md, movies)'
         required: true
-        type: choice
-        options:
-          - additional_info
-          - admins
 
       Role_name:
         description: 'Role name (e.g., read)'
