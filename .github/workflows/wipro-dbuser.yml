@@ -195,7 +195,7 @@ jobs:
         
         if grep -q "${{ github.event.inputs.client_name }}user" userlist.txt; then
           echo "User exists, updating permission"
-          IFS=',' read -ra ROLE <<< ${{env.ROLES}}
+          IFS=',' read -ra ROLE <<< "$ROLES"
   
           echo "$ROLES"
           
