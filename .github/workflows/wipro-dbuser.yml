@@ -245,11 +245,6 @@ jobs:
           eval "$CMD"
           # displaying user creation message
           echo "${{ github.event.inputs.client_name }}user has been created successfully"
-  
-          # Execute the command
-          eval "$CMD"
-          # displaying user creation message
-          echo "${{ github.event.inputs.client_name }}user has been created successfully"
           
           FILE_NAME="${{ github.event.inputs.client_name }}user-password.txt"
           echo "username=${{ github.event.inputs.client_name }}user" > "$FILE_NAME"
