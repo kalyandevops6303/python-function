@@ -10,7 +10,7 @@ on:
         options:
           - wipro
       collection_names:
-        description: 'Refer the following collection names in the bellow field (e.g., features_md)'
+        description: 'Refer the following collection names in the next field (e.g., features_md)'
         required: false
         type: choice
         options:
