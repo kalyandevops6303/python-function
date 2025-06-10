@@ -189,30 +189,43 @@ jobs:
         atlas config set private_api_key ${{ secrets.ATLAS_PRIVATE_KEY }}
         atlas config set project_id ${{ secrets.ATLAS_PROJECT_ID }}
         
-    - name: Generate 16-character password and create db user
+    - name: Generate 16-character password and create/update db user
       run: |
         # Generate 16-character password
         PASSWORD=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 16)
-        # Mask the password in GitHub logs
         echo "::add-mask::$PASSWORD"
-        IFS=',' read -ra ROLE <<< "$ROLES"
-        echo "$ROLES"
         
-        # Start the base command
-        CMD="atlas dbusers create --username ${{ github.event.inputs.client_name }}user --password "$PASSWORD" --scope Tr-mongo-cluster"
+        # Create username
+        USERNAME="${{ github.event.inputs.client_name }}user"
+    
+        # Simulated user list file (in reality, you would fetch this from Atlas API or maintain an actual list)
+        atlas dbusers list --output json > userlist.json
+        jq -r '.[].username' userlist.json > userlist.txt
+    
+        # Read input collections
+        IFS=',' read -ra ROLE <<< "${{ github.event.inputs.multiple_collection_names }}"
         
-        # Append --role read@dbname for each db
+        # Initialize command
+        if grep -q "$USERNAME" userlist.txt; then
+          echo "$USERNAME exists. Updating user."
+          CMD="atlas dbusers update --username $USERNAME --password \"$PASSWORD\""
+        else
+          echo "$USERNAME does not exist. Creating new user."
+          CMD="atlas dbusers create --username $USERNAME --password \"$PASSWORD\" --scope Tr-mongo-cluster"
+        fi
+    
+        # Append roles
         for item in "${ROLE[@]}"; do
-        CMD+=" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item"
+          CMD+=" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item"
         done
-        
-        # Show the final command (for logging)
+    
+        # Log and run
         echo "Final command: $CMD"
-        # Execute the command
         eval "$CMD"
-        
-        FILE_NAME="${{ github.event.inputs.client_name }}user-password.txt"
-        echo "username=${{ github.event.inputs.client_name }}user" > "$FILE_NAME"
+    
+        # Write credentials to file
+        FILE_NAME="${USERNAME}-password.txt"
+        echo "username=$USERNAME" > "$FILE_NAME"
         echo "password=$PASSWORD" >> "$FILE_NAME"
       
     - name: Upload ${{ github.event.inputs.client_name }}user-password.txt as artifact
