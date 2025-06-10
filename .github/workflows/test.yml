@@ -207,7 +207,7 @@ jobs:
         # Initialize command
         if grep -q "$USERNAME" userlist.txt; then
           echo "$USERNAME exists. Updating user."
-          CMD="atlas dbusers update --username $USERNAME --password \"$PASSWORD\""
+          CMD="atlas dbusers update --username $USERNAME "
         else
           echo "$USERNAME does not exist. Creating new user."
           CMD="atlas dbusers create --username $USERNAME --password \"$PASSWORD\" --scope Tr-mongo-cluster"
