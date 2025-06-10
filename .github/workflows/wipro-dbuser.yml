@@ -195,7 +195,9 @@ jobs:
         
         if grep -q "${{ github.event.inputs.client_name }}user" userlist.txt; then
           echo "User exists, updating permission"
-          IFS=',' read -ra ROLE <<< ${{ github.event.inputs.multiple_collection_names }}#"$ROLES"
+          echo ${{ github.event.inputs.multiple_collection_names }} >> $GITHUB_OUTPUT
+          IFS=',' read -ra ROLE <<< $GITHUB_OUTPUT 
+          #"$ROLES"
   
           echo "$ROLES"
           
@@ -261,6 +263,7 @@ jobs:
         path: ${{ github.event.inputs.client_name }}user-password.txt
     
     - name: Removing configuration details
+      continue-on-error: true
       run: |
         rm -rf ~/.config/atlascli/config.toml
-      continue-on-error: true
+      
