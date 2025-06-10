@@ -199,8 +199,7 @@ jobs:
         USERNAME="${{ github.event.inputs.client_name }}user"
     
         # Simulated user list file (in reality, you would fetch this from Atlas API or maintain an actual list)
-        atlas dbusers list --output json > userlist.json
-        jq -r '.[].username' userlist.json > userlist.txt
+        atlas dbusers list >  userlist.txt
     
         # Read input collections
         IFS=',' read -ra ROLE <<< "${{ github.event.inputs.multiple_collection_names }}"
