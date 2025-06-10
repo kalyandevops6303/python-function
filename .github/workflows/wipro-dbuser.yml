@@ -1,4 +1,4 @@
-name: Mongo DB user creation with specific previlage
+name: Mongo DB user creation
 
 on:
   workflow_dispatch:
@@ -9,8 +9,8 @@ on:
         type: choice
         options:
           - wipro
-      collection_name:
-        description: 'Refer these collection names bellow field (e.g., features_md)'
+      collection_names:
+        description: 'Refer the following collection names in the bellow field (e.g., features_md)'
         required: false
         type: choice
         options:
