@@ -152,14 +152,13 @@ on:
           - user_tokens
           - users
       read_collections:
-        description: 'Comma-separated collection names for READ access'
+        description: 'Comma-separated collection names for READ access(eg., cities_md,features_md)'
         required: false
-        default: cities_md,tools_md
 
       write_collections:
-        description: 'Comma-separated collection names for WRITE access'
+        description: 'Comma-separated collection names for WRITE access(eg., cities_md,features_md)'
         required: false
-        default: features_md,services_md
+        
 jobs:
   create-atlas-db-user:
     runs-on: ubuntu-latest          
