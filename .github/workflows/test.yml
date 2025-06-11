@@ -212,7 +212,7 @@ jobs:
           echo "$USERNAME exists. Fetching current roles and updating user."
         
           # Fetch existing roles
-          EXISTING_ROLES=$(atlas dbusers describe --username "$USERNAME" --output json | jq -r '.roles[] | "\(.roleName)@\(.databaseName)"')
+          EXISTING_ROLES=$(atlas dbusers describe "$USERNAME" --output json | jq -r '.roles[] | "\(.roleName)@\(.databaseName)"')
         
           # Collect all roles
           ALL_ROLES=()
