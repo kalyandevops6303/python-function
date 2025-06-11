@@ -196,7 +196,25 @@ jobs:
         # Start building the command
         if grep -q "$USERNAME" userlist.txt; then
           echo "$USERNAME exists. Updating user."
+          # Fetch existing roles
+          EXISTING_ROLES=$(atlas dbusers describe "$USERNAME" --output json | jq -r '.roles[] | "\(.roleName)@\(.databaseName).\(.collectionName)"')
+          echo "Existing roles: $EXISTING_ROLES"
+          # Collect all roles
+          ALL_ROLES=()
+          for r in $EXISTING_ROLES; do
+            ALL_ROLES+=("$r")
+          done
+          for item in "${ROLE[@]}"; do
+            ALL_ROLES+=("${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item")
+          done
+        
+          # De-duplicate roles
+          UNIQUE_ROLES=$(printf "%s\n" "${ALL_ROLES[@]}" | sort -u)
+        
           CMD="atlas dbusers update $USERNAME --scope Tr-mongo-cluster"
+          for role in $UNIQUE_ROLES; do
+            CMD+=" --role $role"
+          done
         else
           echo "$USERNAME does not exist. Creating new user."
           # Generate 16-character password
