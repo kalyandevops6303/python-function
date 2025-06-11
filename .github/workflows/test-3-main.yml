@@ -233,5 +233,6 @@ jobs:
         path: ${{ github.event.inputs.client_name }}user-password.txt
     
     - name: Removing configuration details
+      if: always()
       run: |
         rm -rf ~/.config/atlascli/config.toml
