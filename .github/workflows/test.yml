@@ -152,8 +152,9 @@ on:
           - user_tokens
           - users
       multiple_collection_names:
-        description: 'Enter , seperated collection names (e.g., features_md,movies)'
+        description: 'Enter , seperated collection names (e.g., features_md,analytics)'
         required: true
+        default: services_md,cities_md
 
       Role_name:
         description: 'Role name (e.g., read)'
