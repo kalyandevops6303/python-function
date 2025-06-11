@@ -191,59 +191,32 @@ jobs:
         
     - name: Validating weather user existing or not and creating user if not #Generate 16-character password and create db user
       run: |
-        # atlas dbusers list >> userlist.txt
+        atlas dbusers list >> userlist.txt
         
-        # if grep -q "${{ github.event.inputs.client_name }}user" userlist.txt; then
-          # echo "User exists, updating ROLE"
+        if grep -q "${{ github.event.inputs.client_name }}user" userlist.txt; then
+          echo "User exists, updating ROLE"
 
-          # IFS=',' read -ra ROLE <<< "$ROLES"
-          # echo "ROLES=$ROLES"
-  
-          # echo "$ROLES"
-          
-          # # Start the base command
-          # CMD="atlas dbusers update ${{ github.event.inputs.client_name }}user --scope Tr-mongo-cluster"
-          
-          # # Append --role read@dbname for each db
-          # for item in "${ROLE[@]}"; do
-          # CMD+=" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item"
-          # done
-          
-          # # Show the final command (for logging)
-          # echo "Final command: $CMD"
-  
-          # # Execute the command
-          # eval "$CMD"
-          # # displaying user role updated message
-          # echo "${{ github.event.inputs.client_name }}user role has been updated successfully"
-          
-        # else
-          echo "User not found, creating the ${{ github.event.inputs.client_name }}user"
-        
-          # Generate 16-character password
-          PASSWORD=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 16)
-  
-          # Mask the password in GitHub logs
-          echo "::add-mask::$PASSWORD"
-  
           IFS=',' read -ra ROLE <<< "$ROLES"
+          echo "ROLES=$ROLES"
   
           echo "$ROLES"
-          
-          # Start the base command
-          CMD="atlas dbusers create --username ${{ github.event.inputs.client_name }}user --password "$PASSWORD" --scope Tr-mongo-cluster"
-          
-          # Append --role read@dbname for each db
-          for item in "${ROLE[@]}"; do
+          # Initialize command
+        if grep -q "$USERNAME" userlist.txt; then
+          echo "$USERNAME exists. Updating user."
+          CMD="atlas dbusers update $USERNAME --scope Tr-mongo-cluster"
+        else
+          echo "$USERNAME does not exist. Creating new user."
+          CMD="atlas dbusers create --username $USERNAME --password $PASSWORD --scope Tr-mongo-cluster"
+        fi
+    
+        # Append roles
+        for item in "${ROLE[@]}"; do
           CMD+=" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item"
-          done
-          
-          # Show the final command (for logging)
-          echo "Final command: $CMD"
-  
-          # Execute the command
-          eval "$CMD"
-          # displaying user creation message
+        done
+    
+        # Log and run
+        echo "Final command: $CMD"
+        eval "$CMD"
           echo "${{ github.event.inputs.client_name }}user has been created successfully"
           
           FILE_NAME="${{ github.event.inputs.client_name }}user-password.txt"
