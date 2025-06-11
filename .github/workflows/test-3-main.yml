@@ -162,8 +162,8 @@ on:
 jobs:
   create-atlas-db-user:
     runs-on: ubuntu-latest          
-    env:
-     ROLES: ${{ github.event.inputs.multiple_collection_names }}
+    # env:
+    #  ROLES: ${{ github.event.inputs.multiple_collection_names }}
 
     steps:
     - name: Installing atlas mongodb and setting up monogo cli
@@ -189,9 +189,9 @@ jobs:
     - name: Generate 16-character password and create/update db user
       run: |
 
-        USERNAME="${{ github.event.inputs.client_name }}user"
+        # USERNAME="${{ github.event.inputs.client_name }}user"
 
-        atlas dbusers list > userlist.txt
+        # atlas dbusers list > userlist.txt
 
         # Start building the command
         if grep -q "$USERNAME" userlist.txt; then
