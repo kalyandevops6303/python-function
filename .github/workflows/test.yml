@@ -181,6 +181,8 @@ jobs:
         sudo apt-get install -y mongodb-atlas
         sudo apt-get install -y mongodb-atlas-cli
         atlas -v
+        # to filter roles shell installing shell extension
+        sudo apt-get install -y jq
         
     - name: Setting up config details
       run: |
@@ -207,8 +209,19 @@ jobs:
         
         # Initialize command
         if grep -q "$USERNAME" userlist.txt; then
-          echo "$USERNAME exists. Updating user."
-          CMD="atlas dbusers update $USERNAME --scope Tr-mongo-cluster"
+          echo "$USERNAME exists. Fetching current roles and updating user."
+          
+          # Get existing roles
+          EXISTING_ROLES=$(atlas dbusers describe --username "$USERNAME" --output json | jq -r '.roles[] | "--role \(.roleName)@" + .databaseName')
+          
+          # Add new roles from input
+          NEW_ROLES=""
+          for item in "${ROLE[@]}"; do
+            NEW_ROLES+=" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item"
+          done
+
+          # Combine roles
+          CMD="atlas dbusers update $USERNAME --scope Tr-mongo-cluster $EXISTING_ROLES $NEW_ROLES"
         else
           echo "$USERNAME does not exist. Creating new user."
           CMD="atlas dbusers create --username $USERNAME --password $PASSWORD --scope Tr-mongo-cluster"
