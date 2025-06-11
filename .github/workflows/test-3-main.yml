@@ -223,8 +223,8 @@ jobs:
         echo "Final command: $CMD"
         eval "$CMD"
 
-        FILE_NAME="${USERNAME}-password.txt"
-        echo "username=$USERNAME" > "$FILE_NAME"
+        FILE_NAME="${{ github.event.inputs.client_name }}user-password.txt"
+        echo "username=${{ github.event.inputs.client_name }}user" > "$FILE_NAME"
         echo "password=$PASSWORD" >> "$FILE_NAME"
       
     - name: Upload ${{ github.event.inputs.client_name }}user-password.txt as artifact
