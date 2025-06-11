@@ -189,9 +189,6 @@ jobs:
         
     - name: Generate 16-character password and create/update db user
       run: |
-        # Generate 16-character password
-        PASSWORD=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 16)
-        echo "::add-mask::$PASSWORD"
 
         USERNAME="${{ github.event.inputs.client_name }}user"
 
@@ -203,6 +200,10 @@ jobs:
           CMD="atlas dbusers update $USERNAME --scope Tr-mongo-cluster"
         else
           echo "$USERNAME does not exist. Creating new user."
+          # Generate 16-character password
+          PASSWORD=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 16)
+          echo "::add-mask::$PASSWORD"        
+          
           CMD="atlas dbusers create --username $USERNAME --password $PASSWORD --scope Tr-mongo-cluster"
         fi
 
