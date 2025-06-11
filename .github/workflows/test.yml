@@ -213,7 +213,7 @@ jobs:
         
           # Fetch existing roles
           EXISTING_ROLES=$(atlas dbusers describe "$USERNAME" --output json | jq -r '.roles[] | "\(.roleName)@\(.databaseName)"')
-          echo "EXISTING_ROLES"
+          echo "$EXISTING_ROLES"
           # Collect all roles
           ALL_ROLES=()
           for r in $EXISTING_ROLES; do
