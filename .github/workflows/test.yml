@@ -207,32 +207,38 @@ jobs:
         # Read input collections
         IFS=',' read -ra ROLE <<< "${{ github.event.inputs.multiple_collection_names }}"
         
-        # Initialize command
-        if grep -q "$USERNAME" userlist.txt; then
+        # Initialize CMD
+        if atlas dbusers list | grep -q "$USERNAME"; then
           echo "$USERNAME exists. Fetching current roles and updating user."
-          
-          # Get existing roles
-          EXISTING_ROLES=$(atlas dbusers describe --username "$USERNAME" --output json | jq -r '.roles[] | "--role \(.roleName)@" + .databaseName')
-          
-          # Add new roles from input
-          NEW_ROLES=""
-          for item in "${ROLE[@]}"; do
-            NEW_ROLES+=" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item"
+        
+          # Fetch existing roles
+          EXISTING_ROLES=$(atlas dbusers describe --username "$USERNAME" --output json | jq -r '.roles[] | "\(.roleName)@\(.databaseName)"')
+        
+          # Collect all roles
+          ALL_ROLES=()
+          for r in $EXISTING_ROLES; do
+            ALL_ROLES+=("$r")
           done
-
-          # Combine roles
-          CMD="atlas dbusers update $USERNAME --scope Tr-mongo-cluster $EXISTING_ROLES $NEW_ROLES"
+          for item in "${ROLE[@]}"; do
+            ALL_ROLES+=("${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item")
+          done
+        
+          # De-duplicate roles
+          UNIQUE_ROLES=$(printf "%s\n" "${ALL_ROLES[@]}" | sort -u)
+        
+          CMD="atlas dbusers update $USERNAME --scope Tr-mongo-cluster"
+          for role in $UNIQUE_ROLES; do
+            CMD+=" --role $role"
+          done
         else
           echo "$USERNAME does not exist. Creating new user."
           CMD="atlas dbusers create --username $USERNAME --password $PASSWORD --scope Tr-mongo-cluster"
+          for item in "${ROLE[@]}"; do
+            CMD+=" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item"
+          done
         fi
-    
-        # Append roles
-        for item in "${ROLE[@]}"; do
-          CMD+=" --role ${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item"
-        done
-    
-        # Log and run
+        
+        # Run final command
         echo "Final command: $CMD"
         eval "$CMD"
     
