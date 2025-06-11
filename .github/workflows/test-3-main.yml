@@ -187,6 +187,7 @@ jobs:
         atlas config set project_id ${{ secrets.ATLAS_PROJECT_ID }}
         
     - name: Generate 16-character password and create/update db user
+      id: create_user
       run: |
 
         USERNAME="${{ github.event.inputs.client_name }}user"
