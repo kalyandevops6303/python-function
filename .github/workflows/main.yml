@@ -1,0 +1,237 @@
+name: test-3-wipro Mongo DB user 
+
+on:
+  workflow_dispatch:
+    inputs:
+      client_name:
+        description: 'client name (e.g., wipro)'
+        required: true
+        type: choice
+        options:
+          - wipro
+      collection_name:
+        description: 'Refer these collection names bellow field (e.g., features_md)'
+        required: false
+        type: choice
+        options:
+          - additional_info
+          - admins
+          - alerts
+          - analytics
+          - analytics_summary
+          - api_permissions_md
+          - app_configs_md
+          - app_notifications
+          - app_roles_md
+          - app_roles_permissions_md
+          - approvals
+          - assessed_candidates
+          - base_notifications_md
+          - change_stream_token
+          - cities_md
+          - client_info
+          - company_industries_md
+          - competencies_md
+          - competency_attributes_md
+          - conversations
+          - countries_md
+          - currency_md
+          - delegate_invitations
+          - documents_md
+          - dropdown_config_md
+          - education_institutes_md
+          - education_md
+          - email_notifications
+          - email_otp_collection
+          - favourites
+          - feature_mapping
+          - features_md
+          - feedback_data_md
+          - feedback_results
+          - flextern_comments
+          - flextern_invitation
+          - flextern_leaderboard
+          - flextern_milestone_artifacts
+          - flextern_milestone_feedback
+          - flextern_milestones
+          - flextern_projects
+          - flextern_recognition
+          - flextern_team_info
+          - github_commits
+          - github_metadata
+          - github_pull_requests
+          - job_transactions
+          - kudos_and_wow
+          - languages_md
+          - note_category_md
+          - notifications
+          - organization
+          - overall_score_template
+          - parsed_resumes
+          - passports
+          - permissions_md
+          - phone_otp_collection
+          - planner_task
+          - product_requirements
+          - project_documents
+          - project_secondary_status
+          - projects_integration_metadata
+          - rating_tags_md
+          - ratings
+          - request_tokens
+          - request_tracker
+          - request_tracker_v2
+          - requests
+          - restricted_users
+          - roles_md
+          - services_md
+          - skills_md
+          - states_md
+          - support_requests
+          - talent_info
+          - team_channel_timestamp
+          - timezones_md
+          - tools_md
+          - user_availability
+          - user_document_signatures
+          - user_tests
+          - user_tokens
+          - users
+          - additional_info
+          - admins
+          - alerts
+          - analytics_summary
+          - app_configs_md
+          - app_roles_md
+          - app_roles_permissions_md
+          - base_notifications_md
+          - cities_md
+          - client_info
+          - company_industries_md
+          - competencies_md
+          - competency_attributes_md
+          - countries_md
+          - documents_md
+          - dropdown_config_md
+          - education_institutes_md
+          - education_md
+          - email_notifications
+          - features_md
+          - feedback_data_md
+          - feedback_results
+          - flextern_comments
+          - flextern_invitation
+          - flextern_leaderboard
+          - flextern_milestone_artifacts
+          - flextern_milestone_feedback
+          - flextern_milestones
+          - flextern_projects
+          - flextern_recognition
+          - flextern_team_info
+          - github_pull_requests_analyses
+          - job_transactions
+          - languages_md
+          - note_category_md
+          - organization
+          - parsed_resumes
+          - passports
+          - permissions_md
+          - phone_otp_collection
+          - project_documents
+          - project_secondary_status
+          - request_tracker_v2
+          - roles_md
+          - services_md
+          - skills_md
+          - states_md
+          - talent_info
+          - timezones_md
+          - tools_md
+          - user_availability
+          - user_document_signatures
+          - user_tokens
+          - users
+      read_collections:
+        description: 'Comma-separated collection names for READ access'
+        required: false
+        default: cities_md,tools_md
+
+      write_collections:
+        description: 'Comma-separated collection names for WRITE access'
+        required: false
+        default: features_md,services_md
+jobs:
+  create-atlas-db-user:
+    runs-on: ubuntu-latest          
+    env:
+     ROLES: ${{ github.event.inputs.multiple_collection_names }}
+
+    steps:
+    - name: Installing atlas mongodb and setting up monogo cli
+      run: |
+        sudo apt-get install gnupg curl
+        curl -fsSL https://pgp.mongodb.com/server-7.0.asc | \
+        sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg \
+        --dearmor
+        echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+        sudo apt-get update
+        sudo apt-get install -y mongodb-atlas
+        sudo apt-get install -y mongodb-atlas-cli
+        atlas -v
+        
+    - name: Setting up config details
+      run: |
+        
+        # Set Atlas CLI configuration
+        atlas config set public_api_key ${{ secrets.ATLAS_PUBLIC_KEY }}
+        atlas config set private_api_key ${{ secrets.ATLAS_PRIVATE_KEY }}
+        atlas config set project_id ${{ secrets.ATLAS_PROJECT_ID }}
+        
+    - name: Generate 16-character password and create/update db user
+      run: |
+        # Generate 16-character password
+        PASSWORD=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 16)
+        echo "::add-mask::$PASSWORD"
+
+        USERNAME="${{ github.event.inputs.client_name }}user"
+
+        atlas dbusers list > userlist.txt
+
+        # Start building the command
+        if grep -q "$USERNAME" userlist.txt; then
+          echo "$USERNAME exists. Updating user."
+          CMD="atlas dbusers update $USERNAME --scope Tr-mongo-cluster"
+        else
+          echo "$USERNAME does not exist. Creating new user."
+          CMD="atlas dbusers create --username $USERNAME --password $PASSWORD --scope Tr-mongo-cluster"
+        fi
+
+        # Read collections for READ access
+        IFS=',' read -ra READ_COLL <<< "${{ github.event.inputs.read_collections }}"
+        for coll in "${READ_COLL[@]}"; do
+          CMD+=" --role read@tru-${{ github.event.inputs.client_name }}.$coll"
+        done
+
+        # Read collections for WRITE access
+        IFS=',' read -ra WRITE_COLL <<< "${{ github.event.inputs.write_collections }}"
+        for coll in "${WRITE_COLL[@]}"; do
+          CMD+=" --role readWrite@tru-${{ github.event.inputs.client_name }}.$coll"
+        done
+
+        # Log and run the command
+        echo "Final command: $CMD"
+        eval "$CMD"
+
+        FILE_NAME="${USERNAME}-password.txt"
+        echo "username=$USERNAME" > "$FILE_NAME"
+        echo "password=$PASSWORD" >> "$FILE_NAME"
+      
+    - name: Upload ${{ github.event.inputs.client_name }}user-password.txt as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: generated-password
+        path: ${{ github.event.inputs.client_name }}user-password.txt
+    
+    - name: Removing configuration details
+      run: |
+        rm -rf ~/.config/atlascli/config.toml
