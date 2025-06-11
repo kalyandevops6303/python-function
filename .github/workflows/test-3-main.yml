@@ -220,7 +220,7 @@ jobs:
           # Generate 16-character password
           PASSWORD=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 16)
           echo "::add-mask::$PASSWORD"        
-          
+          echo "created_user=true" >> "$GITHUB_OUTPUT"
           CMD="atlas dbusers create --username $USERNAME --password $PASSWORD --scope Tr-mongo-cluster"
         fi
 
@@ -245,6 +245,7 @@ jobs:
         echo "password=$PASSWORD" >> "$FILE_NAME"
       
     - name: Upload ${{ github.event.inputs.client_name }}user-password.txt as artifact
+      if: steps.create_user.outputs.created_user == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: generated-password
