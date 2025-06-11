@@ -189,9 +189,9 @@ jobs:
     - name: Generate 16-character password and create/update db user
       run: |
 
-        # USERNAME="${{ github.event.inputs.client_name }}user"
+        USERNAME="${{ github.event.inputs.client_name }}user"
 
-        # atlas dbusers list > userlist.txt
+        atlas dbusers list > userlist.txt
 
         # Start building the command
         if grep -q "$USERNAME" userlist.txt; then
