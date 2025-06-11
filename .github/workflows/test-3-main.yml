@@ -153,11 +153,11 @@ on:
           - users
       read_collections:
         description: 'Comma-separated collection names for READ access(eg., cities_md,features_md)'
-        required: true
+        required: false
 
       write_collections:
         description: 'Comma-separated collection names for WRITE access(eg., cities_md,features_md)'
-        required: true
+        required: false
         
 jobs:
   create-atlas-db-user:
