@@ -200,6 +200,8 @@ jobs:
           # Fetch existing roles
           EXISTING_ROLES=$(atlas dbusers describe "$USERNAME" --output json | jq -r '.roles[] | "\(.roleName)@\(.databaseName).\(.collectionName)"')
           echo "Existing roles: $EXISTING_ROLES"
+          echo "Required read roles: ${{ github.event.inputs.read_collections}}"
+          echo "Required readwrite roles: ${{ github.event.inputs.write_collections}}"
           # Collect all roles
           ALL_ROLES=()
           for r in $EXISTING_ROLES; do
