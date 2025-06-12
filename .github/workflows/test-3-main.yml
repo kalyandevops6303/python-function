@@ -199,7 +199,7 @@ jobs:
           echo "$USERNAME exists. Updating user."
           # Fetch existing roles
           EXISTING_ROLES=$(atlas dbusers describe "$USERNAME" --output json | jq -r '.roles[] | "\(.roleName)@\(.databaseName).\(.collectionName)"')
-          echo "Existing roles:\n $EXISTING_ROLES"
+          echo "Existing roles: $EXISTING_ROLES"
           # Collect all roles
           ALL_ROLES=()
           for r in $EXISTING_ROLES; do
@@ -207,9 +207,9 @@ jobs:
           done
           for item in "${ROLE[@]}"; do
             ALL_ROLES+=("${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item")
-            echo "echoing all roles:$ALL_ROLES"
+            
           done
-        
+          echo "echoing all roles:$ALL_ROLES"
           # De-duplicate roles
           UNIQUE_ROLES=$(printf "%s\n" "${ALL_ROLES[@]}" | sort -u)
         
