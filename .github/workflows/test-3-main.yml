@@ -207,6 +207,7 @@ jobs:
           done
           for item in "${ROLE[@]}"; do
             ALL_ROLES+=("${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item")
+            echo "$ALL_ROLES"
           done
         
           # De-duplicate roles
