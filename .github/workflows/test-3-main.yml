@@ -189,72 +189,75 @@ jobs:
     - name: Generate 16-character password and create/update db user
       id: create_user
       run: |
-
         USERNAME="${{ github.event.inputs.client_name }}user"
-
+    
         atlas dbusers list > userlist.txt
-
-        # Start building the command
+    
+        ALL_ROLES=()
+    
         if grep -q "$USERNAME" userlist.txt; then
           echo "$USERNAME exists. Updating user."
+    
           # Fetch existing roles
-          EXISTING_ROLES=$(atlas dbusers describe "$USERNAME" --output json | jq -r '.roles[] | "\(.roleName)@\(.databaseName).\(.collectionName)"')
-          echo "Existing roles: $EXISTING_ROLES"
-          echo "Required read roles: ${{ github.event.inputs.read_collections}}"
-          echo "Required readwrite roles: ${{ github.event.inputs.write_collections}}"
-          # Collect all roles
-          ALL_ROLES=()
-          for r in $EXISTING_ROLES; do
+          mapfile -t EXISTING_ROLES < <(atlas dbusers describe "$USERNAME" --output json | jq -r '.roles[] | "\(.roleName)@\(.databaseName).\(.collectionName)"')
+          echo "Existing roles: ${EXISTING_ROLES[@]}"
+    
+          for r in "${EXISTING_ROLES[@]}"; do
             ALL_ROLES+=("$r")
-          done
-          # Read collections for READ access
-          IFS=',' read -ra READ_COLL <<< "${{ github.event.inputs.read_collections }}"
-          for coll in "${READ_COLL[@]}"; do
-            ALL_ROLES+=" --role read@tru-${{ github.event.inputs.client_name }}.$coll"
-          done
-  
-          # Read collections for WRITE access
-          IFS=',' read -ra WRITE_COLL <<< "${{ github.event.inputs.write_collections }}"
-          for coll in "${WRITE_COLL[@]}"; do
-            ALL_ROLES+=" --role readWrite@tru-${{ github.event.inputs.client_name }}.$coll"
-          done
-          echo "echoing all roles:${ALL_ROLES[@]}"
-          # De-duplicate roles
-          UNIQUE_ROLES=$(printf "%s\n" "${ALL_ROLES[@]}" | sort -u)
-          echo "ehoing unique roles---$UNIQUE_ROLES"
-        
-          CMD="atlas dbusers update $USERNAME --scope Tr-mongo-cluster"
-          for role in $UNIQUE_ROLES; do
-            CMD+=" --role $role"
           done
         else
           echo "$USERNAME does not exist. Creating new user."
-          # Generate 16-character password
           PASSWORD=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 16)
-          echo "::add-mask::$PASSWORD"        
+          echo "::add-mask::$PASSWORD"
           echo "created_user=true" >> "$GITHUB_OUTPUT"
-          CMD="atlas dbusers create --username $USERNAME --password $PASSWORD --scope Tr-mongo-cluster"
         fi
-
-        # Read collections for READ access
+    
+        # Add read roles
         IFS=',' read -ra READ_COLL <<< "${{ github.event.inputs.read_collections }}"
         for coll in "${READ_COLL[@]}"; do
-          CMD+=" --role read@tru-${{ github.event.inputs.client_name }}.$coll"
+          trimmed_coll=$(echo "$coll" | xargs)
+          if [[ -n "$trimmed_coll" ]]; then
+            ALL_ROLES+=("read@tru-${{ github.event.inputs.client_name }}.$trimmed_coll")
+          fi
         done
-
-        # Read collections for WRITE access
+    
+        # Add readWrite roles
         IFS=',' read -ra WRITE_COLL <<< "${{ github.event.inputs.write_collections }}"
         for coll in "${WRITE_COLL[@]}"; do
-          CMD+=" --role readWrite@tru-${{ github.event.inputs.client_name }}.$coll"
+          trimmed_coll=$(echo "$coll" | xargs)
+          if [[ -n "$trimmed_coll" ]]; then
+            ALL_ROLES+=("readWrite@tru-${{ github.event.inputs.client_name }}.$trimmed_coll")
+          fi
         done
-
-        # Log and run the command
+    
+        # Deduplicate all roles
+        mapfile -t UNIQUE_ROLES < <(printf "%s\n" "${ALL_ROLES[@]}" | sort -u)
+    
+        echo "Echoing unique roles:"
+        for role in "${UNIQUE_ROLES[@]}"; do
+          echo "$role"
+        done
+    
+        # Build the command
+        if grep -q "$USERNAME" userlist.txt; then
+          CMD="atlas dbusers update $USERNAME --scope Tr-mongo-cluster"
+        else
+          CMD="atlas dbusers create --username $USERNAME --password $PASSWORD --scope Tr-mongo-cluster"
+        fi
+    
+        for role in "${UNIQUE_ROLES[@]}"; do
+          CMD+=" --role $role"
+        done
+    
         echo "Final command: $CMD"
         eval "$CMD"
-
-        FILE_NAME="${{ github.event.inputs.client_name }}user-password.txt"
-        echo "username=${{ github.event.inputs.client_name }}user" > "$FILE_NAME"
-        echo "password=$PASSWORD" >> "$FILE_NAME"
+    
+        # Save credentials if new user was created
+        if [[ "$CMD" == *"create"* ]]; then
+          FILE_NAME="${{ github.event.inputs.client_name }}user-password.txt"
+          echo "username=$USERNAME" > "$FILE_NAME"
+          echo "password=$PASSWORD" >> "$FILE_NAME"
+        fi
       
     - name: Upload ${{ github.event.inputs.client_name }}user-password.txt as artifact
       if: steps.create_user.outputs.created_user == 'true'
