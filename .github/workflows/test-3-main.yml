@@ -214,6 +214,7 @@ jobs:
           echo "echoing all roles:$ALL_ROLES"
           # De-duplicate roles
           UNIQUE_ROLES=$(printf "%s\n" "${ALL_ROLES[@]}" | sort -u)
+          echo "$UNIQUE_ROLES"
         
           CMD="atlas dbusers update $USERNAME --scope Tr-mongo-cluster"
           for role in $UNIQUE_ROLES; do
