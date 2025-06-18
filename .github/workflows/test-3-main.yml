@@ -207,9 +207,16 @@ jobs:
           for r in $EXISTING_ROLES; do
             ALL_ROLES+=("$r")
           done
-          for item in "${ROLE[@]}"; do
-            ALL_ROLES+=("${{ github.event.inputs.Role_name }}@tru-${{ github.event.inputs.client_name }}.$item")
-            
+          # Read collections for READ access
+          IFS=',' read -ra READ_COLL <<< "${{ github.event.inputs.read_collections }}"
+          for coll in "${READ_COLL[@]}"; do
+            ALL_ROLES+=" --role read@tru-${{ github.event.inputs.client_name }}.$coll"
+          done
+  
+          # Read collections for WRITE access
+          IFS=',' read -ra WRITE_COLL <<< "${{ github.event.inputs.write_collections }}"
+          for coll in "${WRITE_COLL[@]}"; do
+            ALL_ROLES+=" --role readWrite@tru-${{ github.event.inputs.client_name }}.$coll"
           done
           echo "echoing all roles:${ALL_ROLES[@]}"
           # De-duplicate roles
