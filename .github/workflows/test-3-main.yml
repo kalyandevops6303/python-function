@@ -214,6 +214,7 @@ jobs:
     
         # Add read roles
         IFS=',' read -ra READ_COLL <<< "${{ github.event.inputs.read_collections }}"
+        echo "read collections: $READ_COLL"
         for coll in "${READ_COLL[@]}"; do
           trimmed_coll=$(echo "$coll" | xargs)
           if [[ -n "$trimmed_coll" ]]; then
@@ -223,6 +224,7 @@ jobs:
     
         # Add readWrite roles
         IFS=',' read -ra WRITE_COLL <<< "${{ github.event.inputs.write_collections }}"
+        echo "read collections: $READ_COLL"
         for coll in "${WRITE_COLL[@]}"; do
           trimmed_coll=$(echo "$coll" | xargs)
           if [[ -n "$trimmed_coll" ]]; then
