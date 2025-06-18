@@ -200,7 +200,7 @@ jobs:
     
           # Fetch existing roles
           mapfile -t EXISTING_ROLES < <(atlas dbusers describe "$USERNAME" --output json | jq -r '.roles[] | "\(.roleName)@\(.databaseName).\(.collectionName)"')
-          echo "Existing roles: ${EXISTING_ROLES[@]}"
+          echo "Existing roles***: ${EXISTING_ROLES[@]}"
     
           for r in "${EXISTING_ROLES[@]}"; do
             ALL_ROLES+=("$r")
@@ -229,11 +229,12 @@ jobs:
             ALL_ROLES+=("readWrite@tru-${{ github.event.inputs.client_name }}.$trimmed_coll")
           fi
         done
+        echo "echoing all roles+++:${ALL_ROLES[@]}"
     
         # Deduplicate all roles
         mapfile -t UNIQUE_ROLES < <(printf "%s\n" "${ALL_ROLES[@]}" | sort -u)
     
-        echo "Echoing unique roles:"
+        echo "Echoing unique roles---:"
         for role in "${UNIQUE_ROLES[@]}"; do
           echo "$role"
         done
